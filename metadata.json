@@ -1,0 +1,5 @@
+{
+  "name": "AI Lead Generation Platform",
+  "description": "An AI-powered application to generate business leads based on niche, city, and country. It uses Gemini with Google Search to find up-to-date business information and allows exporting the results to a CSV file.",
+  "requestFramePermissions": []
+}
