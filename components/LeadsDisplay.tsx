@@ -67,6 +67,7 @@ const LeadsDisplay: React.FC<LeadsDisplayProps> = ({ leads, sources }) => {
   const [filterCity, setFilterCity] = useState('');
   const [filterCountry, setFilterCountry] = useState('');
   const [websiteFilter, setWebsiteFilter] = useState('all'); // 'all', 'yes', 'no'
+  const [emailFilter, setEmailFilter] = useState('all'); // 'all', 'yes', 'no'
 
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
@@ -80,10 +81,16 @@ const LeadsDisplay: React.FC<LeadsDisplayProps> = ({ leads, sources }) => {
         if (websiteFilter === 'no') return !lead.website;
         return true; // 'all'
       })();
+      
+      const emailMatch = (() => {
+        if (emailFilter === 'yes') return !!lead.email;
+        if (emailFilter === 'no') return !lead.email;
+        return true; // 'all'
+      })();
 
-      return cityMatch && countryMatch && websiteMatch;
+      return cityMatch && countryMatch && websiteMatch && emailMatch;
     });
-  }, [leads, filterCity, filterCountry, websiteFilter]);
+  }, [leads, filterCity, filterCountry, websiteFilter, emailFilter]);
 
 
   const handleExport = () => {
@@ -105,7 +112,7 @@ const LeadsDisplay: React.FC<LeadsDisplayProps> = ({ leads, sources }) => {
               Export to CSV
             </button>
           </div>
-           <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                <FilterInput
                  label="Filter by City"
                  value={filterCity}
@@ -128,6 +135,15 @@ const LeadsDisplay: React.FC<LeadsDisplayProps> = ({ leads, sources }) => {
                  <option value="all">Website (All)</option>
                  <option value="yes">Has Website</option>
                  <option value="no">No Website</option>
+               </FilterSelect>
+                <FilterSelect
+                 label="Filter by Email"
+                 value={emailFilter}
+                 onChange={(e) => setEmailFilter(e.target.value)}
+               >
+                 <option value="all">Email (All)</option>
+                 <option value="yes">Has Email</option>
+                 <option value="no">No Email</option>
                </FilterSelect>
             </div>
         </div>
