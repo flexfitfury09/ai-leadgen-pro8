@@ -1,7 +1,6 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { Lead, Source } from '../types';
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 function extractJsonFromString(text: string): any {
     const match = text.match(/```json\s*([\s\S]*?)\s*```|(\[[\s\S]*\])/);
@@ -24,6 +23,11 @@ export const generateLeads = async (
   country: string,
   numberOfLeads: number
 ): Promise<{ leads: Lead[]; sources: Source[] }> => {
+  if (!process.env.API_KEY) {
+    throw new Error("Your API key is not configured. Please follow the deployment instructions to set up the API_KEY environment variable.");
+  }
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
   const prompt = `
     Find up to ${numberOfLeads} local businesses matching the niche '${niche}' in '${city}, ${country}'.
     For each business, find the business name, full address, phone number, website URL, a publicly available contact email address, business type (e.g., "Restaurant", "Retail"), estimated number of employees, and estimated annual revenue.
@@ -105,6 +109,9 @@ export const generateLeads = async (
 
   } catch (error) {
     console.error("Error generating leads from Gemini:", error);
-    throw new Error("Failed to communicate with the AI service. Please check your connection or API key setup.");
+    if (error instanceof Error && error.message.includes('API key')) {
+        throw new Error("The provided API key is invalid or missing. Please check your deployment configuration.");
+    }
+    throw new Error("Failed to communicate with the AI service. Please check your connection or try again later.");
   }
 };

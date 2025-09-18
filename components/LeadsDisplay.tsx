@@ -3,41 +3,64 @@ import { Lead, Source } from '../types';
 import { exportLeadsToCSV } from '../utils/csvExporter';
 import { DownloadIcon } from './icons/DownloadIcon';
 import { LinkIcon } from './icons/LinkIcon';
+import { CloseIcon } from './icons/CloseIcon';
 
 interface LeadsDisplayProps {
   leads: Lead[];
   sources: Source[];
 }
 
-const FilterInput: React.FC<{ label: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; placeholder: string }> = ({ label, value, onChange, placeholder }) => (
-    <div>
-        <label htmlFor={`filter-${label}`} className="sr-only">{label}</label>
-        <input
-            type="text"
-            id={`filter-${label}`}
-            value={value}
-            onChange={onChange}
-            placeholder={placeholder}
-            className="w-full bg-gray-800 border border-dark-border rounded-md shadow-sm py-2 px-3 text-light-text focus:outline-none focus:ring-2 focus:ring-brand-primary transition duration-150"
-            aria-label={label}
-        />
-    </div>
-);
+const FilterInput: React.FC<{
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClear: () => void;
+  placeholder: string;
+}> = ({ label, value, onChange, onClear, placeholder }) => {
+  const isActive = value.length > 0;
 
-const FilterSelect: React.FC<{ label: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; children: React.ReactNode }> = ({ label, value, onChange, children }) => (
-    <div>
-        <label htmlFor={`filter-${label}`} className="sr-only">{label}</label>
-        <select
-            id={`filter-${label}`}
-            value={value}
-            onChange={onChange}
-            className="w-full bg-gray-800 border border-dark-border rounded-md shadow-sm py-2 px-3 text-light-text focus:outline-none focus:ring-2 focus:ring-brand-primary transition duration-150"
-            aria-label={label}
+  return (
+    <div className="relative">
+      <label htmlFor={`filter-${label}`} className="sr-only">{label}</label>
+      <input
+        type="text"
+        id={`filter-${label}`}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`w-full bg-gray-800 border rounded-md shadow-sm py-2 pl-3 pr-10 text-light-text focus:outline-none focus:ring-2 focus:ring-brand-primary transition duration-150 ${isActive ? 'border-brand-primary/50' : 'border-dark-border'}`}
+        aria-label={label}
+      />
+      {isActive && (
+        <button
+          onClick={onClear}
+          className="absolute inset-y-0 right-0 flex items-center pr-3 text-medium-text hover:text-light-text transition-colors"
+          aria-label={`Clear ${label}`}
         >
-            {children}
-        </select>
+          <CloseIcon className="w-5 h-5" />
+        </button>
+      )}
     </div>
-);
+  );
+};
+
+const FilterSelect: React.FC<{ label: string; value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; children: React.ReactNode }> = ({ label, value, onChange, children }) => {
+    const isActive = value !== 'all';
+    return (
+        <div>
+            <label htmlFor={`filter-${label}`} className="sr-only">{label}</label>
+            <select
+                id={`filter-${label}`}
+                value={value}
+                onChange={onChange}
+                className={`w-full bg-gray-800 border rounded-md shadow-sm py-2 px-3 text-light-text focus:outline-none focus:ring-2 focus:ring-brand-primary transition duration-150 ${isActive ? 'border-brand-primary/50' : 'border-dark-border'}`}
+                aria-label={label}
+            >
+                {children}
+            </select>
+        </div>
+    );
+};
 
 
 const LeadsDisplay: React.FC<LeadsDisplayProps> = ({ leads, sources }) => {
@@ -48,6 +71,7 @@ const LeadsDisplay: React.FC<LeadsDisplayProps> = ({ leads, sources }) => {
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
       const address = lead.address.toLowerCase();
+      // Case-insensitive matching
       const cityMatch = filterCity ? address.includes(filterCity.toLowerCase()) : true;
       const countryMatch = filterCountry ? address.includes(filterCountry.toLowerCase()) : true;
       
@@ -86,12 +110,14 @@ const LeadsDisplay: React.FC<LeadsDisplayProps> = ({ leads, sources }) => {
                  label="Filter by City"
                  value={filterCity}
                  onChange={(e) => setFilterCity(e.target.value)}
+                 onClear={() => setFilterCity('')}
                  placeholder="Filter by city..."
                />
                <FilterInput
                  label="Filter by Country"
                  value={filterCountry}
                  onChange={(e) => setFilterCountry(e.target.value)}
+                 onClear={() => setFilterCountry('')}
                  placeholder="Filter by country..."
                />
                <FilterSelect
