@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from "@google/genai";
 import { Lead, Source } from '../types';
 
@@ -24,7 +23,7 @@ export const generateLeads = async (
   numberOfLeads: number
 ): Promise<{ leads: Lead[]; sources: Source[] }> => {
   if (!process.env.API_KEY) {
-    throw new Error("Your API key is not configured. Please follow the deployment instructions to set up the API_KEY environment variable.");
+    throw new Error("API Key is missing. In your deployment platform (like Vercel or Netlify), go to your project settings, find 'Environment Variables', and add a variable named 'API_KEY' with your key value. You must redeploy after adding the key.");
   }
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
