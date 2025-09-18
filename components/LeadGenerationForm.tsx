@@ -1,8 +1,10 @@
-
 import React from 'react';
 import { SearchIcon } from './icons/SearchIcon';
+import { KeyIcon } from './icons/KeyIcon';
 
 interface LeadGenerationFormProps {
+  apiKey: string;
+  onApiKeyChange: (value: string) => void;
   niche: string;
   setNiche: (value: string) => void;
   city: string;
@@ -31,6 +33,8 @@ const InputField: React.FC<{ label: string; value: string | number; onChange: (e
 );
 
 const LeadGenerationForm: React.FC<LeadGenerationFormProps> = ({
+  apiKey,
+  onApiKeyChange,
   niche,
   setNiche,
   city,
@@ -44,6 +48,22 @@ const LeadGenerationForm: React.FC<LeadGenerationFormProps> = ({
 }) => {
   return (
     <form onSubmit={onSubmit}>
+      <div className="mb-6 pb-6 border-b border-dark-border">
+        <label htmlFor="api-key" className="block text-sm font-medium text-medium-text mb-2">Gemini API Key</label>
+        <div className="relative">
+          <KeyIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-medium-text" />
+          <input
+            id="api-key"
+            type="password"
+            value={apiKey}
+            onChange={(e) => onApiKeyChange(e.target.value)}
+            placeholder="Enter your Gemini API Key here"
+            className="w-full bg-gray-800 border border-dark-border rounded-md shadow-sm py-2 pl-10 pr-3 text-light-text focus:outline-none focus:ring-2 focus:ring-brand-primary transition duration-150"
+          />
+        </div>
+        <p className="mt-2 text-xs text-medium-text">Your key is stored in your browser's local storage and not sent to any server.</p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <InputField 
             label="Niche / Industry"
@@ -74,7 +94,7 @@ const LeadGenerationForm: React.FC<LeadGenerationFormProps> = ({
       </div>
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isLoading || !apiKey}
         className="w-full flex items-center justify-center bg-brand-primary hover:bg-brand-primary/90 disabled:bg-gray-500 text-white font-bold py-3 px-4 rounded-md transition-transform transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-card focus:ring-brand-secondary"
       >
         {isLoading ? (

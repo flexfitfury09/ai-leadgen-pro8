@@ -20,12 +20,13 @@ export const generateLeads = async (
   niche: string,
   city: string,
   country: string,
-  numberOfLeads: number
+  numberOfLeads: number,
+  apiKey: string
 ): Promise<{ leads: Lead[]; sources: Source[] }> => {
-  if (!process.env.API_KEY) {
-    throw new Error("API Key is missing. In your deployment platform (like Vercel or Netlify), go to your project settings, find 'Environment Variables', and add a variable named 'API_KEY' with your key value. You must redeploy after adding the key.");
+  if (!apiKey) {
+    throw new Error("Please enter your Gemini API Key to generate leads.");
   }
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey });
 
   const prompt = `
     Find up to ${numberOfLeads} local businesses matching the niche '${niche}' in '${city}, ${country}'.
@@ -108,9 +109,12 @@ export const generateLeads = async (
 
   } catch (error) {
     console.error("Error generating leads from Gemini:", error);
-    if (error instanceof Error && error.message.includes('API key')) {
-        throw new Error("The provided API key is invalid or missing. Please check your deployment configuration.");
+    if (error instanceof Error && (error.message.includes('API key is invalid') || error.message.includes('API key not valid'))) {
+        throw new Error("The provided API key is invalid. Please check the key and try again.");
     }
-    throw new Error("Failed to communicate with the AI service. Please check your connection or try again later.");
+    if (error instanceof Error && error.message.includes("quota")) {
+        throw new Error("You have exceeded your API quota. Please check your Google AI account.");
+    }
+    throw new Error("Failed to communicate with the AI service. The API key might be invalid or there could be a network issue.");
   }
 };

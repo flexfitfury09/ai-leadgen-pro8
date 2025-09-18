@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Lead, Source } from './types';
 import { generateLeads } from './services/geminiService';
 import LeadGenerationForm from './components/LeadGenerationForm';
@@ -7,6 +6,7 @@ import LeadsDisplay from './components/LeadsDisplay';
 import { LogoIcon } from './components/icons/LogoIcon';
 
 const App: React.FC = () => {
+  const [apiKey, setApiKey] = useState<string>('');
   const [niche, setNiche] = useState<string>('coffee shops');
   const [city, setCity] = useState<string>('San Francisco');
   const [country, setCountry] = useState<string>('USA');
@@ -16,10 +16,26 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('gemini_api_key');
+    if (savedApiKey) {
+      setApiKey(savedApiKey);
+    }
+  }, []);
+
+  const handleApiKeyChange = (key: string) => {
+    setApiKey(key);
+    localStorage.setItem('gemini_api_key', key);
+  };
+
   const handleSubmit = useCallback(async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!apiKey) {
+      setError('Please enter your Gemini API Key to generate leads.');
+      return;
+    }
     if (!niche || !city || !country) {
-      setError('Please fill in all fields.');
+      setError('Please fill in all search fields.');
       return;
     }
     setIsLoading(true);
@@ -28,7 +44,7 @@ const App: React.FC = () => {
     setSources([]);
 
     try {
-      const result = await generateLeads(niche, city, country, numberOfLeads);
+      const result = await generateLeads(niche, city, country, numberOfLeads, apiKey);
       if (result.leads.length === 0) {
         setError("No leads found. Try broadening your search criteria.");
       }
@@ -40,7 +56,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [niche, city, country, numberOfLeads]);
+  }, [niche, city, country, numberOfLeads, apiKey]);
 
   return (
     <div className="min-h-screen bg-dark-bg text-light-text font-sans">
@@ -55,6 +71,8 @@ const App: React.FC = () => {
         <main>
           <div className="bg-dark-card shadow-lg rounded-xl p-6 md:p-8 border border-dark-border mb-8">
             <LeadGenerationForm
+              apiKey={apiKey}
+              onApiKeyChange={handleApiKeyChange}
               niche={niche}
               setNiche={setNiche}
               city={city}
