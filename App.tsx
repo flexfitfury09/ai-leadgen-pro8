@@ -95,9 +95,9 @@ const App: React.FC = () => {
           )}
 
           {error && (
-            <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-center" role="alert">
-              <strong className="font-bold">Error: </strong>
-              <span className="block sm:inline">{error}</span>
+            <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg text-left" role="alert">
+              <strong className="font-bold block text-lg">Error</strong>
+              <span className="block mt-1">{error}</span>
             </div>
           )}
           
